@@ -23,7 +23,7 @@
     "_active": true,
     "_components": [],
     "_prefab": {
-      "__id__": 5344
+      "__id__": 5348
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -54,7 +54,7 @@
     },
     "autoReleaseAssets": false,
     "_globals": {
-      "__id__": 5345
+      "__id__": 5349
     },
     "_id": "aaa39e34-5a2d-41b5-b3da-5d1b1e2d5ee3"
   },
@@ -77,13 +77,13 @@
     "_active": true,
     "_components": [
       {
-        "__id__": 5341
+        "__id__": 5345
       },
       {
-        "__id__": 5342
+        "__id__": 5346
       },
       {
-        "__id__": 5343
+        "__id__": 5347
       }
     ],
     "_prefab": null,
@@ -78964,11 +78964,23 @@
       },
       {
         "__id__": 5338
+      },
+      {
+        "__id__": 5340
+      },
+      {
+        "__id__": 5341
+      },
+      {
+        "__id__": 5342
+      },
+      {
+        "__id__": 5343
       }
     ],
     "removedComponents": [
       {
-        "__id__": 5340
+        "__id__": 5344
       }
     ]
   },
@@ -79130,6 +79142,58 @@
     "localID": [
       "8dJxwDUtFPvojb1OasQ/NB"
     ]
+  },
+  {
+    "__type__": "CCPropertyOverrideInfo",
+    "targetInfo": {
+      "__id__": 5339
+    },
+    "propertyPath": [
+      "idleFrame"
+    ],
+    "value": {
+      "__uuid__": "ae56a532-de89-4102-8d46-06aca17b8e07@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    }
+  },
+  {
+    "__type__": "CCPropertyOverrideInfo",
+    "targetInfo": {
+      "__id__": 5339
+    },
+    "propertyPath": [
+      "jumpFrame"
+    ],
+    "value": {
+      "__uuid__": "f46e13cf-836b-48bf-b63b-bbeef3a2dd99@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    }
+  },
+  {
+    "__type__": "CCPropertyOverrideInfo",
+    "targetInfo": {
+      "__id__": 5339
+    },
+    "propertyPath": [
+      "slideFrame"
+    ],
+    "value": {
+      "__uuid__": "173a9a0a-5870-4048-a6de-5ee5e44e38b9@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    }
+  },
+  {
+    "__type__": "CCPropertyOverrideInfo",
+    "targetInfo": {
+      "__id__": 5339
+    },
+    "propertyPath": [
+      "runFrame"
+    ],
+    "value": {
+      "__uuid__": "ef91e908-8db0-4b27-ad4e-ac4ce7ceb41c@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    }
   },
   {
     "__type__": "cc.TargetInfo",
@@ -80958,28 +81022,28 @@
   {
     "__type__": "cc.SceneGlobals",
     "ambient": {
-      "__id__": 5346
-    },
-    "shadows": {
-      "__id__": 5347
-    },
-    "_skybox": {
-      "__id__": 5348
-    },
-    "fog": {
-      "__id__": 5349
-    },
-    "octree": {
       "__id__": 5350
     },
-    "skin": {
+    "shadows": {
       "__id__": 5351
     },
-    "lightProbeInfo": {
+    "_skybox": {
       "__id__": 5352
     },
-    "postSettings": {
+    "fog": {
       "__id__": 5353
+    },
+    "octree": {
+      "__id__": 5354
+    },
+    "skin": {
+      "__id__": 5355
+    },
+    "lightProbeInfo": {
+      "__id__": 5356
+    },
+    "postSettings": {
+      "__id__": 5357
     },
     "bakedWithStationaryMainLight": false,
     "bakedWithHighpLightmap": false

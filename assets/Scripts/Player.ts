@@ -1,4 +1,4 @@
-import { _decorator, Camera, Collider2D, Component, Contact2DType, Details, EventKeyboard, Input, input, IPhysics2DContact, KeyCode, Node, RigidBody2D, UITransform, Vec3 } from 'cc';
+import { _decorator, Camera, Collider2D, Component, Contact2DType, Details, EventKeyboard, Input, input, IPhysics2DContact, KeyCode, Node, RigidBody2D, Sprite, SpriteFrame, UITransform, Vec3 } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('Player')
@@ -15,6 +15,19 @@ export class Player extends Component {
     private _distance: Vec3 = new Vec3();
     private _canJump: boolean = true;
 
+    @property(SpriteFrame)
+    public idleFrame:SpriteFrame = null;
+    @property(SpriteFrame)
+    public runFrame:SpriteFrame = null;
+    @property(SpriteFrame)
+    public slideFrame:SpriteFrame = null;
+    @property(SpriteFrame)
+    public jumpFrame:SpriteFrame = null;
+    @property
+    friction:number = 0.9; // 摩擦系数
+    @property
+    moveSpeedThreshold = 0.5;
+
     start() {
         Vec3.subtract(this._distance, this.camera.node.worldPosition, this.node.worldPosition);
 
@@ -30,6 +43,22 @@ export class Player extends Component {
     update(deltaTime: number) {
         this.HorizontalMove(deltaTime);
         this.Jump(deltaTime);
+
+        const child = this.node.getChildByName("SmallMario");
+        const sprite = child.getComponent(Sprite);
+        if(sprite) {
+            const lv = this._rgbody.linearVelocity;
+            const move_left = this._inputMap[KeyCode.KEY_A] || this._inputMap[KeyCode.ARROW_LEFT];
+            const move_right = this._inputMap[KeyCode.KEY_D] || this._inputMap[KeyCode.ARROW_RIGHT];
+            
+            if(lv.y > this.moveSpeedThreshold || lv.y < -this.moveSpeedThreshold) {
+                sprite.spriteFrame = this.jumpFrame;
+            } else if((move_right && lv.x > this.moveSpeedThreshold) || (move_left && lv.x < -this.moveSpeedThreshold)) {
+                sprite.spriteFrame = this.runFrame;
+            } else if(lv.x > -this.moveSpeedThreshold && lv.x < this.moveSpeedThreshold) {
+                sprite.spriteFrame = this.idleFrame;
+            }
+        }
     }
 
     onLoad () {
@@ -63,6 +92,9 @@ export class Player extends Component {
         } else if(this._inputMap[KeyCode.KEY_D] || this._inputMap[KeyCode.ARROW_RIGHT]) {
             h_speed = 1;
             this.node.setScale(xscale, scale.y, scale.z);
+        } else {
+            lv.x = lv.x * this.friction;
+            this._rgbody.linearVelocity = lv;
         }
 
         if(h_speed) {
