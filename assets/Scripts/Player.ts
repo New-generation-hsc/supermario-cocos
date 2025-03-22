@@ -1,4 +1,6 @@
-import { _decorator, Camera, Collider2D, Component, Contact2DType, Details, EventKeyboard, Input, input, IPhysics2DContact, KeyCode, Node, RigidBody2D, Sprite, SpriteFrame, UITransform, Vec3 } from 'cc';
+import { _decorator, Camera, Collider2D, Component, Contact2DType, EventKeyboard, Input, input, IPhysics2DContact, RigidBody2D, Sprite, SpriteFrame, Vec3, Vec2, UITransform, Animation } from 'cc';
+import StateMgr from './States/StateMgr';
+import { DirectionType } from './States/StateBase';
 const { ccclass, property } = _decorator;
 
 @ccclass('Player')
@@ -10,10 +12,8 @@ export class Player extends Component {
     @property
     jumpSpeed:number = 200;
     
-    private _inputMap:Object = {};
     private _rgbody: RigidBody2D = null;
     private _distance: Vec3 = new Vec3();
-    private _canJump: boolean = true;
 
     @property(SpriteFrame)
     public idleFrame:SpriteFrame = null;
@@ -23,10 +23,11 @@ export class Player extends Component {
     public slideFrame:SpriteFrame = null;
     @property(SpriteFrame)
     public jumpFrame:SpriteFrame = null;
-    @property
-    friction:number = 0.9; // 摩擦系数
-    @property
-    moveSpeedThreshold = 0.5;
+
+    protected stateMgr: StateMgr = null;
+
+    runAnim: Animation = null;
+    private _anim_play: boolean = false;
 
     start() {
         Vec3.subtract(this._distance, this.camera.node.worldPosition, this.node.worldPosition);
@@ -38,27 +39,65 @@ export class Player extends Component {
                 collider.on(Contact2DType.END_CONTACT, this.onEndContact, this);
             }
         }
+        const child = this.node.getChildByName("SmallMario");
+        this.runAnim = child.getComponent(Animation);
+
+        this.stateMgr = new StateMgr(this);
     }
 
     update(deltaTime: number) {
-        this.HorizontalMove(deltaTime);
-        this.Jump(deltaTime);
+        this.stateMgr.update(deltaTime);
+        const xState = this.stateMgr.getHorizontalState();
+        const yState = this.stateMgr.getVerticalState();
 
         const child = this.node.getChildByName("SmallMario");
         const sprite = child.getComponent(Sprite);
-        if(sprite) {
-            const lv = this._rgbody.linearVelocity;
-            const move_left = this._inputMap[KeyCode.KEY_A] || this._inputMap[KeyCode.ARROW_LEFT];
-            const move_right = this._inputMap[KeyCode.KEY_D] || this._inputMap[KeyCode.ARROW_RIGHT];
-            
-            if(lv.y > this.moveSpeedThreshold || lv.y < -this.moveSpeedThreshold) {
-                sprite.spriteFrame = this.jumpFrame;
-            } else if((move_right && lv.x > this.moveSpeedThreshold) || (move_left && lv.x < -this.moveSpeedThreshold)) {
-                sprite.spriteFrame = this.runFrame;
-            } else if(lv.x > -this.moveSpeedThreshold && lv.x < this.moveSpeedThreshold) {
+        const lv = this._rgbody.linearVelocity;
+        console.log("state: " + xState.getName() + ", " + yState.getName());
+
+        if(yState == StateMgr.jumpState) {
+            this.cancelAnimation();
+            sprite.spriteFrame = this.jumpFrame;
+            if(StateMgr.jumpState.getCanJump()) {
+                lv.y = this.jumpSpeed * deltaTime;
+                StateMgr.jumpState.change(false);
+            }
+        } else {
+            if(xState == StateMgr.xIdleState) {
                 sprite.spriteFrame = this.idleFrame;
+                this.cancelAnimation();
+            } else if(xState == StateMgr.runState) {
+                const scale = this.node.scale;
+                let xscale = Math.abs(scale.x);
+
+                if(StateMgr.runState.getDirection() == DirectionType.DIRECTION_RIGHT) {
+                    this.node.setScale(xscale, scale.y, scale.z);
+                    lv.x = this.moveSpeed * deltaTime;
+                } else if(StateMgr.runState.getDirection() == DirectionType.DIRECTION_LEFT) {
+                    this.node.setScale(-xscale, scale.y, scale.z);
+                    lv.x = -this.moveSpeed * deltaTime;
+                }
+                this.runAnimation();
+            } else if(xState == StateMgr.slideState) {
+                this.runAnimation();
+            } else if(xState == StateMgr.turnState) {
+                this.cancelAnimation();
+                sprite.spriteFrame = this.slideFrame;
+                const scale = this.node.scale;
+                let xscale = Math.abs(scale.x);
+
+                if(StateMgr.turnState.getDirection() == DirectionType.DIRECTION_RIGHT) {
+                    this.node.setScale(xscale, scale.y, scale.z);
+                } else if(StateMgr.turnState.getDirection() == DirectionType.DIRECTION_LEFT) {
+                    this.node.setScale(-xscale, scale.y, scale.z);
+                }
             }
         }
+
+        if(this.checkCameraBound(lv, deltaTime) == false) {
+            lv.x = 0;
+        }
+        this._rgbody.linearVelocity = lv;
     }
 
     onLoad () {
@@ -73,65 +112,52 @@ export class Player extends Component {
     }
 
     onKeyDown (event: EventKeyboard) {
-        this._inputMap[event.keyCode] = 1;
+        this.stateMgr.onKeyDown(event);
     }
 
     onKeyUp (event: EventKeyboard) {
-        this._inputMap[event.keyCode] = 0;
-    }
-
-    HorizontalMove(deltaTime: number) {
-        const lv = this._rgbody.linearVelocity;
-        const scale = this.node.scale;
-        let xscale = Math.abs(scale.x);
-
-        let h_speed = 0;
-        if(this._inputMap[KeyCode.KEY_A] || this._inputMap[KeyCode.ARROW_LEFT]) {
-            h_speed = -1;
-            this.node.setScale(-xscale, scale.y, scale.z);
-        } else if(this._inputMap[KeyCode.KEY_D] || this._inputMap[KeyCode.ARROW_RIGHT]) {
-            h_speed = 1;
-            this.node.setScale(xscale, scale.y, scale.z);
-        } else {
-            lv.x = lv.x * this.friction;
-            this._rgbody.linearVelocity = lv;
-        }
-
-        if(h_speed) {
-            const zero_pos = new Vec3();
-            const screen_left = new Vec3();
-            this.camera.screenToWorld(zero_pos, screen_left);
-    
-            const size = this.node.getComponent(UITransform)?.contentSize;
-            const width = size.width;
-    
-            const move_dist = h_speed * this.moveSpeed * deltaTime;
-            const cur_pos = this.node.getWorldPosition();
-            const next_x = cur_pos.x + move_dist;
-            if(next_x < screen_left.x + width / 2) {
-                h_speed = 0;
-            }
-
-            lv.x = h_speed * this.moveSpeed * deltaTime;
-            this._rgbody.linearVelocity = lv;
-        }
-    }
-
-    Jump(deltaTime: number) {
-        const lv = this._rgbody.linearVelocity;
-        
-        if((this._inputMap[KeyCode.KEY_W] || this._inputMap[KeyCode.SPACE]) && this._canJump) {
-            lv.y = this.jumpSpeed * deltaTime;
-            this._canJump = false;
-        }
-        this._rgbody.linearVelocity = lv;
+        this.stateMgr.onKeyUp(event);
     }
 
     onBeginContact (selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
-        this._canJump = true;
+        this.stateMgr.onCollide(selfCollider, otherCollider, contact);
     }
     onEndContact (selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
         
+    }
+
+    getLinearVelocity() {
+        return this._rgbody.linearVelocity;
+    }
+
+    checkCameraBound(lv: Vec2, deltaTime: number) {
+        const zero_pos = new Vec3();
+        const screen_left = new Vec3();
+        this.camera.screenToWorld(zero_pos, screen_left);
+
+        const size = this.node.getComponent(UITransform)?.contentSize;
+        const width = size.width;
+
+        const move_dist = lv.x * this.moveSpeed * deltaTime;
+        const cur_pos = this.node.getWorldPosition();
+        const next_x = cur_pos.x + move_dist;
+        if(next_x < screen_left.x + width / 2) {
+            return false;
+        }
+        return true;
+    }
+
+    runAnimation() {
+        if(this._anim_play) {
+            return;
+        }
+        this._anim_play = true;
+        this.runAnim.play();
+    }
+
+    cancelAnimation() {
+        this._anim_play = false;
+        this.runAnim.stop();
     }
 }
 

@@ -56,7 +56,7 @@
     "_globals": {
       "__id__": 5353
     },
-    "_id": "aaa39e34-5a2d-41b5-b3da-5d1b1e2d5ee3"
+    "_id": "9a9bf490-c77a-45c1-ad55-7aa6836cebb5"
   },
   {
     "__type__": "cc.Node",
@@ -79071,10 +79071,7 @@
         "__expectedType__": "cc.AnimationClip"
       }
     ],
-    "_defaultClip": {
-      "__uuid__": "5f424d0e-6030-4233-a39d-2dd991899c5e",
-      "__expectedType__": "cc.AnimationClip"
-    },
+    "_defaultClip": null,
     "_id": "aayrqrvx1J2IAn27tFU5ak"
   },
   {
