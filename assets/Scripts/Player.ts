@@ -1,4 +1,4 @@
-import { _decorator, Camera, Collider2D, Component, Contact2DType, EventKeyboard, Input, input, IPhysics2DContact, RigidBody2D, Sprite, SpriteFrame, Vec3, Vec2, UITransform, Animation } from 'cc';
+import { _decorator, Camera, Collider2D, Component, Contact2DType, EventKeyboard, Input, input, IPhysics2DContact, RigidBody2D, Sprite, SpriteFrame, Vec3, Vec2, UITransform, Animation, BoxCollider2D, KeyCode } from 'cc';
 import StateMgr from './States/StateMgr';
 import { DirectionType } from './States/StateBase';
 const { ccclass, property } = _decorator;
@@ -28,6 +28,7 @@ export class Player extends Component {
 
     runAnim: Animation = null;
     private _anim_play: boolean = false;
+    private _is_small_mario: boolean = true;
 
     start() {
         Vec3.subtract(this._distance, this.camera.node.worldPosition, this.node.worldPosition);
@@ -39,9 +40,9 @@ export class Player extends Component {
                 collider.on(Contact2DType.END_CONTACT, this.onEndContact, this);
             }
         }
+        
         const child = this.node.getChildByName("SmallMario");
         this.runAnim = child.getComponent(Animation);
-
         this.stateMgr = new StateMgr(this);
     }
 
@@ -113,10 +114,18 @@ export class Player extends Component {
 
     onKeyDown (event: EventKeyboard) {
         this.stateMgr.onKeyDown(event);
+
+        if(event.keyCode == KeyCode.SPACE) {
+            this.switchBigMario();
+        }
     }
 
     onKeyUp (event: EventKeyboard) {
         this.stateMgr.onKeyUp(event);
+
+        if(event.keyCode == KeyCode.SPACE) {
+            this.switchSmallMario();
+        }
     }
 
     onBeginContact (selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
@@ -151,13 +160,47 @@ export class Player extends Component {
         if(this._anim_play) {
             return;
         }
+
         this._anim_play = true;
+        if(this._is_small_mario) {
+            const child = this.node.getChildByName("SmallMario");
+            this.runAnim = child.getComponent(Animation);
+        } else {
+            const child = this.node.getChildByName("BigMario");
+            this.runAnim = child.getComponent(Animation);
+        }
         this.runAnim.play();
     }
 
     cancelAnimation() {
         this._anim_play = false;
         this.runAnim.stop();
+    }
+
+    switchBigMario() {
+        let collider = this.getComponent(BoxCollider2D);
+        collider.offset = new Vec2(0.1, 9.8);
+        collider.size.width = 15.7;
+        collider.size.height = 28.4;
+
+        this._is_small_mario = false;
+        const small_mario = this.node.getChildByName("SmallMario");
+        small_mario.active = false;
+        const big_mario = this.node.getChildByName("BigMario");
+        big_mario.active = true;
+    }
+
+    switchSmallMario() {
+        let collider = this.getComponent(BoxCollider2D);
+        collider.offset = new Vec2(0, 2.3);
+        collider.size.width = 15.4;
+        collider.size.height = 11.2;
+
+        this._is_small_mario = true;
+        const small_mario = this.node.getChildByName("SmallMario");
+        small_mario.active = true;
+        const big_mario = this.node.getChildByName("BigMario");
+        big_mario.active = false;
     }
 }
 
