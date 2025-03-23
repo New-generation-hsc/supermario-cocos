@@ -201,7 +201,7 @@
     "__prefab": {
       "__id__": 8
     },
-    "tag": 0,
+    "tag": 4,
     "_group": 1,
     "_density": 1,
     "_sensor": false,
@@ -374,7 +374,7 @@
     "__prefab": {
       "__id__": 16
     },
-    "tag": 0,
+    "tag": 4,
     "_group": 1,
     "_density": 1,
     "_sensor": false,
@@ -446,6 +446,7 @@
       "__id__": 0
     },
     "fileId": "8eNE6VFRlHfq2FyPcKIDGN",
+    "instance": null,
     "targetOverrides": null
   }
 ]

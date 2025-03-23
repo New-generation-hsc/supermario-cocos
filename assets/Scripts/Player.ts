@@ -1,6 +1,8 @@
-import { _decorator, Camera, Collider2D, Component, Contact2DType, EventKeyboard, Input, input, IPhysics2DContact, RigidBody2D, Sprite, SpriteFrame, Vec3, Vec2, UITransform, Animation, BoxCollider2D, KeyCode } from 'cc';
+import { _decorator, Camera, Collider2D, Component, Contact2DType, EventKeyboard, Input, input, IPhysics2DContact, RigidBody2D, Sprite, SpriteFrame, Vec3, Vec2, UITransform, Animation, BoxCollider2D, KeyCode, AudioClip } from 'cc';
 import StateMgr from './States/StateMgr';
 import { DirectionType } from './States/StateBase';
+import { AudioMgr } from './AudioMgr';
+import { NodeTagType } from './Tags';
 const { ccclass, property } = _decorator;
 
 const MAX_MOVE_SPEED = 200;
@@ -27,6 +29,8 @@ export class Player extends Component {
     public slideFrame:SpriteFrame = null;
     @property(SpriteFrame)
     public jumpFrame:SpriteFrame = null;
+    @property(AudioClip)
+    public powerupAudio: AudioClip = null;
 
     protected stateMgr: StateMgr = null;
 
@@ -139,6 +143,10 @@ export class Player extends Component {
 
     onBeginContact (selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
         this.stateMgr.onCollide(selfCollider, otherCollider, contact);
+
+        if(this._is_small_mario &&otherCollider.tag == NodeTagType.NODE_TAG_TYPE_MUSHROOM) {
+            this.switchBigMario();
+        }
     }
     onEndContact (selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
         
@@ -197,6 +205,7 @@ export class Player extends Component {
         small_mario.active = false;
         const big_mario = this.node.getChildByName("BigMario");
         big_mario.active = true;
+        AudioMgr.inst.playOneShot(this.powerupAudio);
     }
 
     switchSmallMario() {

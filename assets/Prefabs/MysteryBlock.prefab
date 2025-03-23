@@ -294,6 +294,10 @@
       "__uuid__": "d119d540-cdf8-419e-8187-2beb9722f5a2",
       "__expectedType__": "cc.Prefab"
     },
+    "mushRoom": {
+      "__uuid__": "23c7d22c-55f4-4bec-a33b-b4a88d6ba279",
+      "__expectedType__": "cc.Prefab"
+    },
     "_id": ""
   },
   {
