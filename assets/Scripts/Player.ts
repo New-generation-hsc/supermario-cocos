@@ -44,6 +44,8 @@ export class Player extends Component {
         const child = this.node.getChildByName("SmallMario");
         this.runAnim = child.getComponent(Animation);
         this.stateMgr = new StateMgr(this);
+
+        this.switchSmallMario();
     }
 
     update(deltaTime: number) {
