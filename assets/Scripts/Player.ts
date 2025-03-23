@@ -3,6 +3,10 @@ import StateMgr from './States/StateMgr';
 import { DirectionType } from './States/StateBase';
 const { ccclass, property } = _decorator;
 
+const MAX_MOVE_SPEED = 200;
+const MAx_JUMP_SPEED = 300;
+const ACCELERATION = 50;
+
 @ccclass('Player')
 export class Player extends Component {
     @property
@@ -10,7 +14,7 @@ export class Player extends Component {
     @property(Camera)
     camera:Camera = null;
     @property
-    jumpSpeed:number = 200;
+    jumpSpeed:number = 700;
     
     private _rgbody: RigidBody2D = null;
     private _distance: Vec3 = new Vec3();
@@ -29,6 +33,7 @@ export class Player extends Component {
     runAnim: Animation = null;
     private _anim_play: boolean = false;
     private _is_small_mario: boolean = true;
+    private _frication:number = 0.8;
 
     start() {
         Vec3.subtract(this._distance, this.camera.node.worldPosition, this.node.worldPosition);
@@ -75,15 +80,17 @@ export class Player extends Component {
 
                 if(StateMgr.runState.getDirection() == DirectionType.DIRECTION_RIGHT) {
                     this.node.setScale(xscale, scale.y, scale.z);
-                    lv.x = this.moveSpeed * deltaTime;
+                    lv.x = this.getMoveSpeed(DirectionType.DIRECTION_RIGHT, lv, deltaTime);
                 } else if(StateMgr.runState.getDirection() == DirectionType.DIRECTION_LEFT) {
                     this.node.setScale(-xscale, scale.y, scale.z);
-                    lv.x = -this.moveSpeed * deltaTime;
+                    lv.x = this.getMoveSpeed(DirectionType.DIRECTION_LEFT, lv, deltaTime);
                 }
                 this.runAnimation();
             } else if(xState == StateMgr.slideState) {
+                lv.x = this._frication * lv.x;
                 this.runAnimation();
             } else if(xState == StateMgr.turnState) {
+                lv.x = this._frication * lv.x;
                 this.cancelAnimation();
                 sprite.spriteFrame = this.slideFrame;
                 const scale = this.node.scale;
@@ -203,6 +210,20 @@ export class Player extends Component {
         small_mario.active = true;
         const big_mario = this.node.getChildByName("BigMario");
         big_mario.active = false;
+    }
+
+    getMoveSpeed(direction: DirectionType, lv: Vec2, deltaTime: number) {
+        let x_speed = Math.abs(lv.x);
+        if(x_speed < this.moveSpeed) {
+            x_speed = this.moveSpeed * deltaTime;
+        }
+        x_speed += ACCELERATION * deltaTime;
+
+        if(x_speed > MAX_MOVE_SPEED * deltaTime) {
+            x_speed = MAX_MOVE_SPEED * deltaTime;
+        }
+        x_speed = direction == DirectionType.DIRECTION_RIGHT ? x_speed : -x_speed;
+        return x_speed;
     }
 }
 

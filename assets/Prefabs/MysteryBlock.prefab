@@ -47,7 +47,7 @@
     },
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 335.092,
+      "x": 223,
       "y": 80,
       "z": 0
     },
@@ -289,6 +289,10 @@
     "_enabled": true,
     "__prefab": {
       "__id__": 15
+    },
+    "emptyBlock": {
+      "__uuid__": "d119d540-cdf8-419e-8187-2beb9722f5a2",
+      "__expectedType__": "cc.Prefab"
     },
     "_id": ""
   },
